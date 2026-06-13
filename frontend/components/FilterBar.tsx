@@ -4,6 +4,7 @@ import React from 'react';
 import { Card, Box, TextField, MenuItem, Button, Grid } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import { LOCATIONS, PRICE_RANGES, FACILITIES } from '../constants';
 
 interface FilterBarProps {
   selectedCity: string;
@@ -15,30 +16,6 @@ interface FilterBarProps {
   onApply: () => void;
   onReset: () => void;
 }
-
-const locations = [
-  'Semua',
-  'Jakarta Selatan',
-  'Jakarta Timur',
-  'Bekasi',
-  'Depok',
-  'Tangerang'
-];
-
-const priceRanges = [
-  { value: 'Semua', label: 'Semua' },
-  { value: 'under-500', label: '< Rp 500rb/bln' },
-  { value: '500-1000', label: 'Rp 500rb–1jt' },
-  { value: '1000-2000', label: 'Rp 1jt–2jt' },
-  { value: 'over-2000', label: '> Rp 2jt' }
-];
-
-const facilities = [
-  { value: 'Semua', label: 'Semua' },
-  { value: 'Listrik + Air', label: 'Listrik + Air' },
-  { value: 'Kamar Mandi Dalam', label: 'Kamar Mandi Dalam' },
-  { value: 'Furnished', label: 'Furnished' }
-];
 
 export default function FilterBar({
   selectedCity,
@@ -86,7 +63,7 @@ export default function FilterBar({
                 }
               }}
             >
-              {locations.map((loc) => (
+              {LOCATIONS.map((loc) => (
                 <MenuItem key={loc} value={loc}>
                   {loc}
                 </MenuItem>
@@ -110,7 +87,7 @@ export default function FilterBar({
                 }
               }}
             >
-              {priceRanges.map((range) => (
+              {PRICE_RANGES.map((range) => (
                 <MenuItem key={range.value} value={range.value}>
                   {range.label}
                 </MenuItem>
@@ -134,7 +111,7 @@ export default function FilterBar({
                 }
               }}
             >
-              {facilities.map((fac) => (
+              {FACILITIES.map((fac) => (
                 <MenuItem key={fac.value} value={fac.value}>
                   {fac.label}
                 </MenuItem>

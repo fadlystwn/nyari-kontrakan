@@ -11,10 +11,57 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "NyariKontrakan - Cari Kontrakan Petakan Terjangkau",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://nyarikontrakan.com"),
+  title: {
+    default: "NyariKontrakan - Cari Kontrakan Petakan Terjangkau",
+    template: "%s | NyariKontrakan"
+  },
   description: "Cari kontrakan Petakan dengan harga terjangkau, lokasi strategis, dan fasilitas lengkap. Temukan kontrakan impian Anda di Jabodetabek.",
-  keywords: "kontrakan, sewa kontrakan, kontrakan Petakan, sewa rumah petak, kontrakan murah, kontrakan bekasi, kontrakan tangerang, kontrakan depok, kontrakan jakarta",
+  keywords: ["kontrakan", "sewa kontrakan", "kontrakan petakan", "sewa rumah petak", "kontrakan murah", "kontrakan bekasi", "kontrakan tangerang", "kontrakan depok", "kontrakan jakarta"],
+  authors: [{ name: "NyariKontrakan Team" }],
+  creator: "NyariKontrakan",
+  publisher: "NyariKontrakan",
+  formatDetection: {
+    email: false,
+    address: true,
+    telephone: true,
+  },
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "NyariKontrakan - Cari Kontrakan Petakan Terjangkau",
+    description: "Cari kontrakan Petakan dengan harga terjangkau, lokasi strategis, dan fasilitas lengkap. Temukan kontrakan impian Anda di Jabodetabek.",
+    url: "https://nyarikontrakan.com",
+    siteName: "NyariKontrakan",
+    locale: "id_ID",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NyariKontrakan - Cari Kontrakan Petakan Terjangkau",
+    description: "Cari kontrakan Petakan dengan harga terjangkau, lokasi strategis, dan fasilitas lengkap. Temukan kontrakan impian Anda di Jabodetabek.",
+    creator: "@nyarikontrakan",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
+
+export const viewport = {
+  themeColor: "#6750A4",
+  width: "device-width",
+  initialScale: 1,
+};
+
 
 export default function RootLayout({
   children,

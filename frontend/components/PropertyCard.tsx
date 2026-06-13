@@ -5,6 +5,7 @@ import { Card, CardMedia, CardContent, Typography, Divider, Chip, Button, Box, S
 import PlaceIcon from '@mui/icons-material/Place';
 import HomeIcon from '@mui/icons-material/Home';
 import { Property } from '../data/properties';
+import { formatPrice } from '../utils/format';
 
 interface PropertyCardProps {
   property: Property;
@@ -14,15 +15,6 @@ interface PropertyCardProps {
 export default function PropertyCard({ property, onViewDetail }: PropertyCardProps) {
   const { name, location, city, pricePerMonth, facilities, imageUrl, available, petakCount } = property;
 
-  // Format currency to IDR format (Rp 800.000)
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price).replace(/\s/g, ' '); // Clean up non-breaking spaces if any
-  };
 
   return (
     <Card
@@ -47,7 +39,7 @@ export default function PropertyCard({ property, onViewDetail }: PropertyCardPro
           component="img"
           height="160"
           image={imageUrl}
-          alt={name}
+          alt={`Foto Kontrakan ${petakCount} Petak - ${name} di ${location}, ${city}`}
           sx={{
             objectFit: 'cover',
             borderTopLeftRadius: '12px',
