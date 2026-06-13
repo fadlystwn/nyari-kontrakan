@@ -1,0 +1,62 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: scraper_postgres
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"  # Exposed for local testing/inspection if needed
+    networks:
+      - scraper_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: ./api
+    container_name: scraper_api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    ports:
+      - "8000:8000"
+    networks:
+      - scraper_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  scraper:
+    build: ./scraper
+    container_name: scraper_worker
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      PROXY_LIST: ${PROXY_LIST}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      SCRAPE_ON_STARTUP: ${SCRAPE_ON_STARTUP}
+    networks:
+      - scraper_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+
+networks:
+  scraper_net:
+    driver: bridge

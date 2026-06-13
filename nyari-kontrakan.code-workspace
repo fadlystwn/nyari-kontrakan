@@ -1,0 +1,106 @@
+{
+  "folders": [
+    {
+      "name": "backend",
+      "path": "backend"
+    },
+    {
+      "name": "frontend",
+      "path": "frontend"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.git": true,
+      "**/.DS_Store": true,
+      "**/__pycache__": true,
+      "**/*.pyc": true,
+      "**/.venv": true,
+      "**/venv": true
+    },
+    // Backend Specific Settings
+    "python.analysis.extraPaths": [
+      "./backend/api",
+      "./backend/scraper"
+    ],
+    "python.analysis.autoImportCompletions": true,
+    "python.languageServer": "Pylance",
+    "python.formatterProvider": "none",
+    
+    // Formatting & Linting
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    },
+    "[python]": {
+      "editor.defaultFormatter": "charliermarsh.ruff",
+      "editor.formatOnSave": true,
+      "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+      }
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+      "editor.defaultFormatter": "vscode.json-language-features"
+    }
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "API: Run FastAPI Service",
+        "type": "debugpy",
+        "request": "launch",
+        "module": "uvicorn",
+        "args": [
+          "main:app",
+          "--reload",
+          "--port",
+          "8000"
+        ],
+        "cwd": "${workspaceFolder:backend}/api",
+        "jinja": true,
+        "justMyCode": true
+      },
+      {
+        "name": "Scraper: Run Scheduler",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder:backend}/scraper/main.py",
+        "cwd": "${workspaceFolder:backend}/scraper",
+        "console": "integratedTerminal",
+        "justMyCode": true
+      },
+      {
+        "name": "Frontend: Debug Next.js Dev Server",
+        "type": "node",
+        "request": "launch",
+        "program": "${workspaceFolder:frontend}/node_modules/next/dist/bin/next",
+        "args": ["dev"],
+        "cwd": "${workspaceFolder:frontend}",
+        "runtimeExecutable": "npm",
+        "runtimeArgs": ["run", "dev"],
+        "port": 3000
+      }
+    ]
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-python.python",
+      "ms-python.vscode-pylance",
+      "charliermarsh.ruff",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "bradlc.vscode-tailwindcss",
+      "christian-kohler.path-intellisense"
+    ]
+  }
+}

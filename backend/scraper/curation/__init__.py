@@ -1,0 +1,1 @@
+# Curation module package
