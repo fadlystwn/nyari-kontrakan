@@ -154,6 +154,69 @@ class Rumah123Scraper(BaseScraper):
             "raw_data": raw.get("raw_data", {})
         }
 
+    @classmethod
+    def parse_ldp_html(cls, html: str) -> Dict[str, Any]:
+        """
+        Parse raw HTML from a Rumah123 Listing Detail Page (LDP).
+        Returns a dictionary in the raw format suitable for parse_listing.
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        
+        # 1. Title
+        title_el = soup.select_one(".share__content .text-accent")
+        title = title_el.text.strip() if title_el else ""
+        if not title:
+            main_img = soup.select_one('[data-test-id="ldp-image-main"]')
+            if main_img:
+                title = main_img.get("alt", "").strip()
+                
+        # 2. Price Text
+        price_el = soup.select_one(".share__content .text-primary")
+        price_text = price_el.text.strip() if price_el else ""
+        
+        # 3. URL & External ID
+        url_el = soup.select_one(".share__content p.text-3xs")
+        item_url = url_el.text.strip() if url_el else ""
+        
+        ext_id = None
+        if item_url:
+            id_match = re.search(r"ho[rs](\d+)", item_url.lower())
+            ext_id = id_match.group(1) if id_match else item_url.split("-")[-1].strip("/")
+        
+        # 4. Photos
+        photos = []
+        main_img = soup.select_one('[data-test-id="ldp-image-main"]')
+        if main_img and main_img.get("src"):
+            photos.append(main_img.get("src"))
+        elif main_img and main_img.parent and main_img.parent.get("href"):
+            photos.append(main_img.parent.get("href"))
+            
+        thumbs = soup.select('[data-test-id="ldp-thumbnail-image"], [data-test-id="ldp-thumbnail-see-all-image"]')
+        for t in thumbs:
+            src = t.get("src")
+            parent_href = t.parent.get("href") if (t.parent and t.parent.name == "a") else None
+            img_url = parent_href or src
+            if img_url and img_url not in photos:
+                photos.append(img_url)
+
+        return {
+            "external_id": ext_id,
+            "title": title,
+            "price_text": price_text,
+            "location": "",  # LDP sharing snippet doesn't have address details, but we can parse it from URL/title if needed
+            "url": item_url,
+            "photos": photos,
+            "bedrooms": None,
+            "bathrooms": None,
+            "land_area_sqm": None,
+            "building_area_sqm": None,
+            "raw_data": {
+                "price_text": price_text,
+                "location_text": "",
+                "description": title
+            }
+        }
+
     def _generate_mock_listings(self) -> List[Dict[str, Any]]:
         """
         Generate mock Rumah123 listings for testing.
