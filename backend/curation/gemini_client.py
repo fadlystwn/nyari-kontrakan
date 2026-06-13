@@ -1,18 +1,18 @@
-import os
 import httpx
 import json
 import logging
-from typing import Any
+from typing import Any, Dict
+from config import settings
 
 logger = logging.getLogger(__name__)
 
 class GeminiClient:
-    def __init__(self):
-        self.api_key = os.getenv("GEMINI_API_KEY")
+    def __init__(self, api_key: str = None, model: str = None):
+        self.api_key = api_key or settings.gemini_api_key
         if not self.api_key:
-            raise ValueError("GEMINI_API_KEY environment variable is not set")
+            raise ValueError("GEMINI_API_KEY is not configured")
             
-        self.model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+        self.model = model or "gemini-2.5-flash"
         self.api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
 
     async def generate(self, prompt: str, max_tokens: int = 1024) -> str:
@@ -40,7 +40,7 @@ class GeminiClient:
                 logger.error(f"Failed to parse Gemini response payload: {data}. Error: {parse_err}")
                 raise ValueError(f"Invalid API response structure from Gemini: {parse_err}")
 
-    async def curate_listing(self, listing: dict) -> dict:
+    async def curate_listing(self, listing: Dict[str, Any]) -> Dict[str, Any]:
         from .prompts import build_curation_prompt
         prompt = build_curation_prompt(listing)
         raw = await self.generate(prompt)

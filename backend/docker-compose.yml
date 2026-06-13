@@ -23,7 +23,9 @@ services:
       retries: 5
 
   api:
-    build: ./api
+    build:
+      context: .
+      dockerfile: api/Dockerfile
     container_name: scraper_api
     restart: unless-stopped
     env_file: .env
@@ -39,7 +41,9 @@ services:
         condition: service_healthy
 
   scraper:
-    build: ./scraper
+    build:
+      context: .
+      dockerfile: scraper/Dockerfile
     container_name: scraper_worker
     restart: unless-stopped
     env_file: .env

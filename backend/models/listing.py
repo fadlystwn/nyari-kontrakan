@@ -1,6 +1,8 @@
 from sqlalchemy import Column, Integer, BigInteger, String, Text, Boolean, SmallInteger, DateTime, func
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
-from .database import Base
+from sqlalchemy.orm import declarative_base
+
+Base = declarative_base()
 
 class Listing(Base):
     __tablename__ = "listings"

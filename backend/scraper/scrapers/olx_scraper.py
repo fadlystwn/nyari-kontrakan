@@ -1,14 +1,22 @@
 import re
 import logging
+import sys
+from pathlib import Path
 from bs4 import BeautifulSoup
 from typing import List, Dict, Any
 from .base import BaseScraper
-from ..utils.stealth import get_stealth_page
-from ..utils.proxy import get_random_proxy
+from utils.stealth import get_stealth_page
+from utils.proxy import get_random_proxy
+
+BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.append(str(BACKEND_DIR))
+
+from utils import Price, Location  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
-class OlxScraper(BaseScraper):
+class OLXScraper(BaseScraper):
     source = "olx"
     default_url = "https://www.olx.co.id/jakarta-d-d1000001/indekos-dan-kontrakan_c5155"
 
@@ -26,10 +34,8 @@ class OlxScraper(BaseScraper):
         try:
             url = self.default_url
             logger.info(f"Navigating to: {url}")
-            # Go to the search page
             await page.goto(url, wait_until="load", timeout=30000)
             
-            # Simple scroll
             for i in range(2):
                 await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
                 await page.wait_for_timeout(1500)
@@ -37,10 +43,8 @@ class OlxScraper(BaseScraper):
             content = await page.content()
             soup = BeautifulSoup(content, "html.parser")
             
-            # Find itemBox attributes typical in OLX
             cards = soup.find_all(attrs={"data-aut-id": "itemBox"})
             
-            # Fallback selector if class names are random/hashed
             if not cards:
                 cards = soup.select("li[class*='_1DNjI']")
                 
@@ -48,7 +52,6 @@ class OlxScraper(BaseScraper):
 
             for card in cards:
                 try:
-                    # Link
                     link_el = card.find("a")
                     if not link_el or not link_el.get("href"):
                         continue
@@ -56,25 +59,20 @@ class OlxScraper(BaseScraper):
                     if not item_url.startswith("http"):
                         item_url = f"https://www.olx.co.id{item_url}"
                         
-                    # External ID extraction (e.g. iid-903847231 or the trailing numbers)
                     id_match = re.search(r"iid-(\d+)", item_url)
                     ext_id = id_match.group(1) if id_match else item_url.split("-")[-1]
                     if not ext_id or not ext_id.isdigit():
                         ext_id = f"olx_{hash(item_url)}"
 
-                    # Title
                     title_el = card.find(attrs={"data-aut-id": "itemTitle"}) or card.select_one("span[class*='_2tW10']")
                     title = title_el.text.strip() if title_el else "Property Listing"
 
-                    # Price
                     price_el = card.find(attrs={"data-aut-id": "itemPrice"}) or card.select_one("span[class*='_89yzn']")
                     price_text = price_el.text.strip() if price_el else ""
 
-                    # Location
                     loc_el = card.find(attrs={"data-aut-id": "itemSubTitle"}) or card.select_one("span[class*='_2TFe3']")
                     location = loc_el.text.strip() if loc_el else ""
 
-                    # Image
                     img_el = card.find("img")
                     photo_url = None
                     if img_el:
@@ -111,29 +109,16 @@ class OlxScraper(BaseScraper):
         return raw_listings
 
     def parse_listing(self, raw: Dict[str, Any]) -> Dict[str, Any]:
-        price = None
-        price_text = raw.get("price_text", "")
-        if price_text:
-            nums = re.sub(r"\D", "", price_text)
-            if nums:
-                price = int(nums)
-
-        location = raw.get("location", "")
-        city = "Jakarta"
-        if location:
-            parts = [p.strip() for p in location.split(",") if p.strip()]
-            if len(parts) > 1:
-                city = parts[-1]
-            elif parts:
-                city = parts[0]
+        price_obj = Price.parse(raw.get("price_text", ""))
+        loc_obj = Location.parse(raw.get("location", ""))
 
         return {
             "source": self.source,
             "external_id": raw.get("external_id"),
             "title": raw.get("title"),
-            "price": price,
-            "location": location,
-            "city": city,
+            "price": price_obj.value,
+            "location": loc_obj.raw_address,
+            "city": loc_obj.city,
             "property_type": "house",
             "bedrooms": None,
             "bathrooms": None,

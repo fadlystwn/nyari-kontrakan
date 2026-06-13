@@ -1,12 +1,18 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 import logging
+import sys
+from pathlib import Path
 
-from .database import get_db, engine, Base
-from .schemas import HealthCheckResponse
-from .routers import listings, curation
+# Add parent directory to path for backend modules
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.append(str(BACKEND_DIR))
+
+from database import SessionManager
+from models import Base
+from config import settings
+from .controllers import listing_controller, curation_controller, health_controller
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -35,24 +41,14 @@ async def startup_event():
     logger.info("Starting up FastAPI application...")
     try:
         # Fallback table creation if not already created by DB initialization script
-        async with engine.begin() as conn:
+        session_manager = SessionManager(settings.database_url)
+        async with session_manager.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         logger.info("Database connection and tables verified.")
     except Exception as e:
         logger.error(f"Error during database initialization: {e}")
 
 # Register routers
-app.include_router(listings.router)
-app.include_router(curation.router)
-
-@app.get("/health", response_model=HealthCheckResponse, tags=["health"])
-async def health_check(db: AsyncSession = Depends(get_db)):
-    try:
-        # Execute simple query to test DB connection
-        await db.execute(select(1))
-        db_status = "healthy"
-    except Exception as e:
-        db_status = f"unhealthy: {str(e)}"
-        logger.error(f"Health check failed for database: {e}")
-    
-    return HealthCheckResponse(status="ok", database=db_status)
+app.include_router(listing_controller.router)
+app.include_router(curation_controller.router)
+app.include_router(health_controller.router)

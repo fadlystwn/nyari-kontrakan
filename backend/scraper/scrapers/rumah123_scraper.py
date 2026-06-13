@@ -1,10 +1,18 @@
 import re
 import logging
+import sys
+from pathlib import Path
 from bs4 import BeautifulSoup
 from typing import List, Dict, Any
 from .base import BaseScraper
-from ..utils.stealth import get_stealth_page
-from ..utils.proxy import get_random_proxy
+from utils.stealth import get_stealth_page
+from utils.proxy import get_random_proxy
+
+BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.append(str(BACKEND_DIR))
+
+from utils import Price, Location  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +36,6 @@ class Rumah123Scraper(BaseScraper):
             logger.info(f"Navigating to: {url}")
             await page.goto(url, wait_until="load", timeout=30000)
             
-            # Simple scroll
             for i in range(2):
                 await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
                 await page.wait_for_timeout(1500)
@@ -36,7 +43,6 @@ class Rumah123Scraper(BaseScraper):
             content = await page.content()
             soup = BeautifulSoup(content, "html.parser")
             
-            # Rumah123 property cards often use standard card selectors
             cards = soup.select(".ui-organism-intersection-property-card-list")
             if not cards:
                 cards = soup.select("[class*='PropertyCard']")
@@ -45,7 +51,6 @@ class Rumah123Scraper(BaseScraper):
 
             for card in cards:
                 try:
-                    # Link
                     link_el = card.find("a")
                     if not link_el or not link_el.get("href"):
                         continue
@@ -53,32 +58,24 @@ class Rumah123Scraper(BaseScraper):
                     if not item_url.startswith("http"):
                         item_url = f"https://www.rumah123.com{item_url}"
                         
-                    # Extract external id from URL
-                    # e.g., /properti/jakarta-selatan/sewa-rumah-hos1234567/
                     id_match = re.search(r"hos(\d+)", item_url.lower())
                     ext_id = id_match.group(1) if id_match else item_url.split("-")[-1].strip("/")
                     if not ext_id or not ext_id.isalnum():
                         ext_id = f"r123_{hash(item_url)}"
 
-                    # Title
                     title_el = card.find("h2") or card.select_one("[class*='title']")
                     title = title_el.text.strip() if title_el else "Rumah Disewa"
 
-                    # Price
                     price_el = card.select_one(".ui-attribute-card__price") or card.select_one("[class*='price']")
                     price_text = price_el.text.strip() if price_el else ""
 
-                    # Location
                     loc_el = card.select_one(".ui-attribute-card__address") or card.select_one("[class*='address']")
                     location = loc_el.text.strip() if loc_el else ""
 
-                    # Specifications (bedrooms, bathrooms, building size, land size)
-                    # Often represented as lists or spans with icons
                     specs = {}
                     spec_items = card.select(".ui-attribute-card__spec-item") or card.select("[class*='spec-item']")
                     for item in spec_items:
                         text = item.text.strip()
-                        # e.g. "3 K. Tidur" or "2 K. Mandi" or "LT : 100 m²" or "LB : 80 m²"
                         if "tidur" in text.lower() or "kt" in text.lower():
                             kt_match = re.search(r"(\d+)", text)
                             if kt_match:
@@ -96,7 +93,6 @@ class Rumah123Scraper(BaseScraper):
                             if lb_match:
                                 specs["building_area_sqm"] = int(lb_match.group(1))
 
-                    # Photo
                     img_el = card.find("img")
                     photo_url = None
                     if img_el:
@@ -138,46 +134,16 @@ class Rumah123Scraper(BaseScraper):
         return raw_listings
 
     def parse_listing(self, raw: Dict[str, Any]) -> Dict[str, Any]:
-        price = None
-        price_text = raw.get("price_text", "")
-        if price_text:
-            # Normalize price
-            # e.g., "Rp 3,5 Juta/bulan" or "Rp 45 Juta/tahun"
-            s = price_text.lower()
-            num_match = re.search(r"([\d.,]+)", s)
-            if num_match:
-                num_val = num_match.group(1).replace(".", "").replace(",", ".")
-                try:
-                    val = float(num_val)
-                    if "juta" in s:
-                        val *= 1_000_000
-                    elif "m" in s or "miliar" in s:
-                        val *= 1_000_000_000
-                    elif "ribu" in s:
-                        val *= 1_000
-                    
-                    # Store as monthly equivalent if user requests or keep as parsed annual/monthly raw value.
-                    # Standard: we will store the raw numeric value.
-                    price = int(val)
-                except ValueError:
-                    pass
-
-        location = raw.get("location", "")
-        city = "Jakarta"
-        if location:
-            parts = [p.strip() for p in location.split(",") if p.strip()]
-            if len(parts) > 1:
-                city = parts[-1]
-            elif parts:
-                city = parts[0]
+        price_obj = Price.parse(raw.get("price_text", ""))
+        loc_obj = Location.parse(raw.get("location", ""))
 
         return {
             "source": self.source,
             "external_id": raw.get("external_id"),
             "title": raw.get("title"),
-            "price": price,
-            "location": location,
-            "city": city,
+            "price": price_obj.value,
+            "location": loc_obj.raw_address,
+            "city": loc_obj.city,
             "property_type": "house",
             "bedrooms": raw.get("bedrooms"),
             "bathrooms": raw.get("bathrooms"),

@@ -12,7 +12,7 @@
     "./backend/scraper"
   ],
   "python.analysis.autoImportCompletions": true,
-  "python.languageServer": "Pylance",
+  "python.languageServer": "None",
   "python.formatterProvider": "none",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {

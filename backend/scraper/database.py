@@ -1,18 +1,16 @@
-import os
-import asyncpg
-from dotenv import load_dotenv
+import sys
+from pathlib import Path
 
-load_dotenv()
+# Add parent directory to path for backend modules
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.append(str(BACKEND_DIR))
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    db_user = os.getenv("POSTGRES_USER", "scraper_user")
-    db_pass = os.getenv("POSTGRES_PASSWORD", "change_this_to_a_strong_password")
-    db_name = os.getenv("POSTGRES_DB", "scraper_db")
-    DATABASE_URL = f"postgresql://{db_user}:{db_pass}@localhost:5432/{db_name}"
+from database import DatabaseConnectionFactory
+from config import settings
 
 async def get_db_connection():
     """
     Establish and return a connection to the PostgreSQL database using asyncpg.
     """
-    return await asyncpg.connect(DATABASE_URL)
+    return await DatabaseConnectionFactory.get_asyncpg_connection(settings.database_url)
