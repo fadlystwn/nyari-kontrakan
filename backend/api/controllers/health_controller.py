@@ -11,11 +11,12 @@ if str(BACKEND_DIR) not in sys.path:
     sys.path.append(str(BACKEND_DIR))
 
 from ..dependencies import get_db
+from ..auth import verify_api_key_optional
 from schemas import HealthCheckResponse
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["health"])
+router = APIRouter(tags=["health"], dependencies=[Depends(verify_api_key_optional)])
 
 @router.get("/health", response_model=HealthCheckResponse)
 async def health_check(db: AsyncSession = Depends(get_db)):

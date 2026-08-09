@@ -10,10 +10,12 @@ if str(BACKEND_DIR) not in sys.path:
     sys.path.append(str(BACKEND_DIR))
 
 from ..dependencies import get_db
+from ..auth import verify_api_key
 from schemas import ListingResponse, PaginatedListingsResponse, StatsResponse
 from services import ListingService
+from utils.validators import InputValidator
 
-router = APIRouter(prefix="/listings", tags=["listings"])
+router = APIRouter(prefix="/listings", tags=["listings"], dependencies=[Depends(verify_api_key)])
 
 @router.get("", response_model=PaginatedListingsResponse)
 async def get_listings(
@@ -28,6 +30,46 @@ async def get_listings(
     tags: Optional[str] = None,
     db: AsyncSession = Depends(get_db)
 ):
+    # Input validation and sanitization
+    validator = InputValidator()
+    
+    # Validate and sanitize city
+    if city:
+        city = validator.sanitize_city_name(city)
+        if not city:
+            raise HTTPException(status_code=400, detail="Invalid city name")
+    
+    # Validate property type
+    if property_type and not validator.validate_property_type(property_type):
+        raise HTTPException(status_code=400, detail="Invalid property type")
+    
+    # Validate and sanitize prices
+    if min_price is not None:
+        min_price = validator.sanitize_price(min_price)
+        if min_price is None:
+            raise HTTPException(status_code=400, detail="Invalid minimum price")
+    
+    if max_price is not None:
+        max_price = validator.sanitize_price(max_price)
+        if max_price is None:
+            raise HTTPException(status_code=400, detail="Invalid maximum price")
+    
+    # Validate price range
+    if min_price is not None and max_price is not None and min_price > max_price:
+        raise HTTPException(status_code=400, detail="Minimum price cannot exceed maximum price")
+    
+    # Validate source
+    if source and not validator.validate_source(source):
+        raise HTTPException(status_code=400, detail="Invalid data source")
+    
+    # Validate quality score
+    if min_quality is not None and not validator.validate_integer(min_quality, 0, 100):
+        raise HTTPException(status_code=400, detail="Invalid quality score (must be 0-100)")
+    
+    # Sanitize tags
+    if tags:
+        tags = ",".join(validator.sanitize_tags(tags))
+    
     service = ListingService(db)
     listings, total = await service.get_listings(
         city=city,

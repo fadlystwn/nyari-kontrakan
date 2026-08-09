@@ -12,10 +12,21 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "5432:5432"  # Exposed for local testing/inspection if needed
+    # Port removed for security - access only through internal Docker network
     networks:
       - scraper_net
+    # Security: Resource limits to prevent DoS
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    # Security: Run as non-root user (postgres image does this by default)
+    # Security: Read-only root filesystem (commented out as it requires specific setup)
+    # read_only: true
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -32,10 +43,23 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
+      API_KEY: ${API_KEY}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      DATABASE_SSL_MODE: ${DATABASE_SSL_MODE}
+      ENVIRONMENT: ${ENVIRONMENT}
     ports:
       - "8000:8000"
     networks:
       - scraper_net
+    # Security: Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
     depends_on:
       postgres:
         condition: service_healthy
@@ -52,8 +76,19 @@ services:
       PROXY_LIST: ${PROXY_LIST}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       SCRAPE_ON_STARTUP: ${SCRAPE_ON_STARTUP}
+      API_KEY: ${API_KEY}
+      DATABASE_SSL_MODE: ${DATABASE_SSL_MODE}
     networks:
       - scraper_net
+    # Security: Resource limits (scraper needs more resources for Playwright)
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
     depends_on:
       postgres:
         condition: service_healthy

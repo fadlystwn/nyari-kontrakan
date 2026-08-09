@@ -4,3 +4,4 @@ sqlalchemy[asyncio]==2.0.*
 asyncpg==0.29.*
 pydantic==2.*
 python-dotenv
+slowapi==0.1.9

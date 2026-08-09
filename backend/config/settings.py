@@ -24,7 +24,9 @@ class Settings:
     def database_url(self) -> str:
         url = os.getenv("DATABASE_URL")
         if not url:
-            url = f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}@localhost:5432/{self.postgres_db}"
+            # Add SSL mode for secure connections
+            ssl_mode = os.getenv("DATABASE_SSL_MODE", "prefer")
+            url = f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}@localhost:5432/{self.postgres_db}?ssl={ssl_mode}"
         return url
     
     @property
@@ -51,5 +53,25 @@ class Settings:
             return float(os.getenv("CURATION_RATE_LIMIT_DELAY", "1.0"))
         except ValueError:
             return 1.0
+    
+    @property
+    def api_key(self) -> str:
+        return os.getenv("API_KEY", "")
+    
+    @property
+    def allowed_origins(self) -> list:
+        origins_str = os.getenv("ALLOWED_ORIGINS", "")
+        if not origins_str:
+            return []
+        return [origin.strip() for origin in origins_str.split(",") if origin.strip()]
+    
+    @property
+    def environment(self) -> str:
+        return os.getenv("ENVIRONMENT", "development")
+    
+    @property
+    def enable_docs(self) -> bool:
+        # Enable docs in development, disable in production
+        return self.environment.lower() == "development"
 
 settings = Settings()
