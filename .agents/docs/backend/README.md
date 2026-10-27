@@ -319,8 +319,7 @@ backend/
 │   └── Dockerfile
 ├── docker-compose.yml        # Orchestration config
 ├── init.sql                  # Database initialization
-├── .env.template             # Environment template
-└── README.md                 # This file
+└── .env.template             # Environment template
 ```
 
 ## 🐛 Troubleshooting
@@ -424,14 +423,19 @@ LIMIT 10;
 - Use **strong passwords** for PostgreSQL
 - Rotate **API keys** regularly
 - Use **residential proxies** to avoid IP bans
-- Enable **firewall** on VPS (see DEPLOYMENT.md)
+- Enable **firewall** on VPS
 - Keep **Docker images updated**
 
 ## 📚 Additional Documentation
 
-- [DEPLOYMENT.md](DEPLOYMENT.md) - VPS deployment guide
-- [API.md](API.md) - Detailed API documentation
+All project documents live under `.agents/docs/`:
+
 - [property-scraper-prd.md](property-scraper-prd.md) - Product requirements document
+- [ARCHITECTURE_PLAN.md](ARCHITECTURE_PLAN.md) - Architecture and migration plan
+- [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) - Implementation notes
+- [SECURITY.md](SECURITY.md) - Security hardening
+- [SECURITY_IMPLEMENTATION_SUMMARY.md](SECURITY_IMPLEMENTATION_SUMMARY.md) - Security change log
+- [Agent guides](../../AGENTS.md) - Rules and workflows for AI coding agents
 
 ## 🤝 Contributing
 
