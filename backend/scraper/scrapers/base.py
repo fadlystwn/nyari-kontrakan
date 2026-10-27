@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Dict, Any
 
 class BaseScraper(ABC):
-    source: str  # must be set in subclass, e.g. "olx", "rumah123"
+    source: str
 
     @abstractmethod
     async def fetch_listings(self) -> List[Dict[str, Any]]:

@@ -162,7 +162,6 @@ class Rumah123Scraper(BaseScraper):
         """
         soup = BeautifulSoup(html, "html.parser")
         
-        # 1. Title
         title_el = soup.select_one(".share__content .text-accent")
         title = title_el.text.strip() if title_el else ""
         if not title:
@@ -170,11 +169,9 @@ class Rumah123Scraper(BaseScraper):
             if main_img:
                 title = main_img.get("alt", "").strip()
                 
-        # 2. Price Text
         price_el = soup.select_one(".share__content .text-primary")
         price_text = price_el.text.strip() if price_el else ""
         
-        # 3. URL & External ID
         url_el = soup.select_one(".share__content p.text-3xs")
         item_url = url_el.text.strip() if url_el else ""
         
@@ -183,7 +180,6 @@ class Rumah123Scraper(BaseScraper):
             id_match = re.search(r"ho[rs](\d+)", item_url.lower())
             ext_id = id_match.group(1) if id_match else item_url.split("-")[-1].strip("/")
         
-        # 4. Photos
         photos = []
         main_img = soup.select_one('[data-test-id="ldp-image-main"]')
         if main_img and main_img.get("src"):
@@ -203,7 +199,7 @@ class Rumah123Scraper(BaseScraper):
             "external_id": ext_id,
             "title": title,
             "price_text": price_text,
-            "location": "",  # LDP sharing snippet doesn't have address details, but we can parse it from URL/title if needed
+            "location": "",
             "url": item_url,
             "photos": photos,
             "bedrooms": None,
