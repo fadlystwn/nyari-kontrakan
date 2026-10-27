@@ -12,23 +12,17 @@ class Price:
         
         text = price_text.lower().strip()
         
-        # Check for Indonesian number scales
         multiplier = 1
         if "juta" in text:
             multiplier = 1_000_000
         elif "miliar" in text or "milyar" in text:
             multiplier = 1_000_000_000
             
-        # Clean Rp, spaces, and non-numeric characters (except decimals)
         cleaned = re.sub(r"[^\d,\.]", "", text)
         
-        # Handle cases with juta/miliar where we might have decimals like "Rp 1.5 Juta"
         if multiplier > 1:
-            # Replace comma with dot for decimal parsing
             cleaned = cleaned.replace(",", ".")
-            # If multiple dots exist (e.g. 1.500.000), keep only the last one or remove them
             if cleaned.count(".") > 1:
-                # Standard formatting mistake with dots, just strip dots
                 cleaned = cleaned.replace(".", "")
             try:
                 val = float(cleaned) * multiplier
@@ -36,7 +30,6 @@ class Price:
             except ValueError:
                 pass
         
-        # For standard format like Rp 1.500.000, remove all non-digits and parse
         cleaned_digits = re.sub(r"\D", "", text)
         if cleaned_digits:
             try:
@@ -61,7 +54,6 @@ class Location:
         if not parts:
             return cls("", None)
             
-        # Determine city from parts
         city = None
         if len(parts) >= 2:
             city = parts[-1]

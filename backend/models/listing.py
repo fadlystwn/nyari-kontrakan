@@ -25,7 +25,6 @@ class Listing(Base):
     scraped_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), index=True)
     updated_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
     
-    # Curation Fields
     curated = Column(Boolean, nullable=False, default=False, index=True)
     quality_score = Column(SmallInteger, index=True)
     tags = Column(ARRAY(Text))

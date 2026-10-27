@@ -18,18 +18,15 @@ class ScraperService:
         for raw in raw_listings:
             parsed = scraper.parse_listing(raw)
             try:
-                # Find if already exists in DB
                 stmt = select(Listing).where(Listing.external_id == parsed["external_id"])
                 result = await self.session.execute(stmt)
                 db_model = result.scalar_one_or_none()
 
                 if db_model:
-                    # Update fields
                     for key, val in parsed.items():
                         if key not in {"id", "scraped_at", "updated_at"}:
                             setattr(db_model, key, val)
                 else:
-                    # Create new row
                     db_model = Listing(**parsed)
                     self.session.add(db_model)
 

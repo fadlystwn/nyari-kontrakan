@@ -23,10 +23,8 @@ class InputValidator:
         if not isinstance(input_string, str):
             return None
             
-        # Remove null bytes and other control characters
         sanitized = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', input_string)
         
-        # Limit length
         if len(sanitized) > max_length:
             return sanitized[:max_length]
             
@@ -93,10 +91,8 @@ class InputValidator:
         if not city:
             return None
             
-        # Allow only letters, spaces, hyphens, and common punctuation
         sanitized = re.sub(r'[^\w\s\-.,]', '', city)
         
-        # Limit length
         if len(sanitized) > 128:
             return None
             
@@ -116,13 +112,10 @@ class InputValidator:
         if not tags:
             return []
             
-        # Split by comma
         tag_list = [tag.strip() for tag in tags.split(",") if tag.strip()]
         
-        # Sanitize each tag
         sanitized_tags = []
         for tag in tag_list:
-            # Allow only alphanumeric, spaces, hyphens, and underscores
             sanitized = re.sub(r'[^\w\s\-]', '', tag)
             if sanitized and len(sanitized) <= 50:
                 sanitized_tags.append(sanitized.lower())
@@ -141,7 +134,7 @@ class InputValidator:
             True if property type is valid, False otherwise
         """
         if not property_type:
-            return True  # None is valid (optional filter)
+            return True
             
         allowed_types = {
             'house', 'apartment', 'land', 'commercial', 
@@ -162,7 +155,7 @@ class InputValidator:
             True if source is valid, False otherwise
         """
         if not source:
-            return True  # None is valid (optional filter)
+            return True
             
         allowed_sources = {'olx', 'rumah123'}
         
@@ -185,8 +178,7 @@ class InputValidator:
         if not isinstance(price, int):
             return None
             
-        # Price should be positive and within reasonable bounds
-        if price < 0 or price > 10_000_000_000:  # Max 10 billion IDR
+        if price < 0 or price > 10_000_000_000:
             return None
             
         return price

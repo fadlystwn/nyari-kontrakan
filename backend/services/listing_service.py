@@ -72,7 +72,6 @@ class ListingService:
         return result.scalar_one_or_none()
 
     async def get_statistics(self) -> Dict[str, Any]:
-        # Count by city
         city_stmt = select(Listing.city, func.count(Listing.id)).group_by(Listing.city)
         city_result = await self.session.execute(city_stmt)
         count_by_city = [
@@ -81,7 +80,6 @@ class ListingService:
             if row[0] is not None
         ]
         
-        # Average price by property type (only where price is valid)
         type_stmt = (
             select(Listing.property_type, func.avg(Listing.price))
             .where(Listing.price > 0)
