@@ -8,7 +8,6 @@ import logging
 import sys
 from pathlib import Path
 
-# Add parent directory to path for backend modules
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 if str(BACKEND_DIR) not in sys.path:
     sys.path.append(str(BACKEND_DIR))
@@ -18,14 +17,11 @@ from models import Base
 from config import settings
 from .controllers import listing_controller, curation_controller, health_controller
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
 
-# Conditionally enable docs based on environment
 docs_url = "/docs" if settings.enable_docs else None
 redoc_url = "/redoc" if settings.enable_docs else None
 
@@ -39,7 +35,6 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Add security headers middleware
 @app.middleware("http")
 async def add_security_headers(request, call_next):
     response = await call_next(request)
@@ -50,8 +45,6 @@ async def add_security_headers(request, call_next):
     response.headers["Content-Security-Policy"] = "default-src 'self'"
     return response
 
-# Configure CORS to allow frontend connections
-# Get allowed origins from environment or use localhost for development
 allowed_origins = settings.allowed_origins if hasattr(settings, 'allowed_origins') else [
     "http://localhost:3000",
     "http://localhost:8000",
@@ -67,12 +60,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Startup event
 @app.on_event("startup")
 async def startup_event():
     logger.info("Starting up FastAPI application...")
     try:
-        # Fallback table creation if not already created by DB initialization script
         session_manager = SessionManager(settings.database_url)
         async with session_manager.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
@@ -80,7 +71,6 @@ async def startup_event():
     except Exception as e:
         logger.error(f"Error during database initialization: {e}")
 
-# Register routers
 app.include_router(listing_controller.router)
 app.include_router(curation_controller.router)
 app.include_router(health_controller.router)
