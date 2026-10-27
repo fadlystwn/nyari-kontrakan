@@ -2,7 +2,6 @@ import logging
 import sys
 from pathlib import Path
 
-# Add parent directory to path for backend modules
 BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
 if str(BACKEND_DIR) not in sys.path:
     sys.path.append(str(BACKEND_DIR))
