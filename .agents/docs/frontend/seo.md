@@ -13,29 +13,29 @@ Configured in `app/layout.tsx` to handle search engine previews and sharing card
 - **Theme Color & Viewport**: Configured standard theme color `#6750A4` matching the Material Design 3 theme palette.
 
 ### 2. Robots Guidelines (`robots.txt`)
-Dynamically generated via [robots.ts](file:///c:/Users/fadly/Documents/projects/nyari-kontrakan/frontend/app/robots.ts):
+Dynamically generated via [robots.ts](../../../frontend/app/robots.ts):
 - Allows all search bots (`*`) to access the home and property pages.
 - Disallows search crawlers from entering backend API paths (`/api/`) and build bundles (`/_next/`).
 - Points search crawlers directly to the sitemap XML URL.
 
 ### 3. XML Sitemap Generation (`sitemap.xml`)
-Dynamically generated via [sitemap.ts](file:///c:/Users/fadly/Documents/projects/nyari-kontrakan/frontend/app/sitemap.ts):
+Dynamically generated via [sitemap.ts](../../../frontend/app/sitemap.ts):
 - Declares the home route with high priority (`1.0`) and daily update check intervals.
 - Includes boilerplate structure and comments for indexing dynamic property listing detail pages when dynamic routes are introduced.
 
 ### 4. Web Manifest (`manifest.json`)
-Dynamically generated via [manifest.ts](file:///c:/Users/fadly/Documents/projects/nyari-kontrakan/frontend/app/manifest.ts):
+Dynamically generated via [manifest.ts](../../../frontend/app/manifest.ts):
 - Provides app name, description, stand-alone display configuration, icons, and theme colors to support PWA capabilities and mobile-optimized search engines.
 
 ### 5. Semantic HTML & Landmark Roles
-Refactored inside [page.tsx](file:///c:/Users/fadly/Documents/projects/nyari-kontrakan/frontend/app/page.tsx):
+Refactored inside [page.tsx](../../../frontend/app/page.tsx):
 - Changed primary container wrapping main sections to render as `<main>` landmark tag using MUI container's `component="main"`.
 - Transformed main hero section title to use a single `<h1>` tag per page ("Cari Kontrakan Petakan"), aligning with Google's indexing guidelines.
 - Changed the navbar brand logo text to a clean styling `<div>` component instead of `<h1>` to avoid dilution of header levels.
 - Applied unique ID selectors (`id="main-page-heading"`, `id="btn-pasang-iklan-nav"`, etc.) to enhance testability.
 
 ### 6. Structured Schema Markup (JSON-LD)
-Embedded directly inside [page.tsx](file:///c:/Users/fadly/Documents/projects/nyari-kontrakan/frontend/app/page.tsx) to supply Google Rich Snippets with machine-readable data:
+Embedded directly inside [page.tsx](../../../frontend/app/page.tsx) to supply Google Rich Snippets with machine-readable data:
 - **WebSite Schema**: Outlines site details, URL, and name.
 - **RealEstateAgent Schema**: Identifies NyariKontrakan as a real estate discovery tool.
 - **ItemList Schema**: Dynamically maps available property cards, including property names, locations, cities, and prices, directly into the document so Google understands the data stream before rendering client scripts.
@@ -45,7 +45,7 @@ Embedded directly inside [page.tsx](file:///c:/Users/fadly/Documents/projects/ny
 ## Modifying & Extending SEO
 
 ### Changing Global Meta Info
-Edit the `metadata` object inside [layout.tsx](file:///c:/Users/fadly/Documents/projects/nyari-kontrakan/frontend/app/layout.tsx):
+Edit the `metadata` object inside [layout.tsx](../../../frontend/app/layout.tsx):
 ```typescript
 export const metadata: Metadata = {
   title: {
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
 ```
 
 ### Adding New Page Paths to Sitemap
-When a new static page (e.g. `/tentang` or `/hubungi`) is added, update the `routes` array in [sitemap.ts](file:///c:/Users/fadly/Documents/projects/nyari-kontrakan/frontend/app/sitemap.ts):
+When a new static page (e.g. `/tentang` or `/hubungi`) is added, update the `routes` array in [sitemap.ts](../../../frontend/app/sitemap.ts):
 ```typescript
 const routes = [
   {
