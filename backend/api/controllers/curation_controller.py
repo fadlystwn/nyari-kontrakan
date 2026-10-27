@@ -8,7 +8,7 @@ router = APIRouter(prefix="/curation", tags=["curation"], dependencies=[Depends(
 limiter = Limiter(key_func=get_remote_address)
 
 @router.post("/trigger")
-@limiter.limit("5/minute")  # Limit to 5 triggers per minute per IP
+@limiter.limit("5/minute")
 async def trigger_curation(background_tasks: BackgroundTasks):
     background_tasks.add_task(run_api_curation)
     return {"status": "Curation batch triggered in background"}

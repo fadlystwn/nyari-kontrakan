@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Locate and load the .env file in the backend directory
 BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
 env_path = BACKEND_DIR / ".env"
 load_dotenv(dotenv_path=env_path)
@@ -24,7 +23,6 @@ class Settings:
     def database_url(self) -> str:
         url = os.getenv("DATABASE_URL")
         if not url:
-            # Add SSL mode for secure connections
             ssl_mode = os.getenv("DATABASE_SSL_MODE", "prefer")
             url = f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}@localhost:5432/{self.postgres_db}?ssl={ssl_mode}"
         return url
@@ -71,7 +69,6 @@ class Settings:
     
     @property
     def enable_docs(self) -> bool:
-        # Enable docs in development, disable in production
         return self.environment.lower() == "development"
 
 settings = Settings()
