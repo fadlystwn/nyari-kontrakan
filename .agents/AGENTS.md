@@ -23,7 +23,8 @@ links back here for every rule, so skills never become a second source of truth.
 ### Documents
 
 Project documentation lives in `.agents/docs/`; outside `.agents/` and `.clinerules/` the tree holds
-code, config, and the discovery pointers only.
+code, config, and the discovery pointers only. The root [`README.md`](../README.md) is the human entry
+point: it summarizes setup and links into these documents without owning any rules.
 
 | Document | Covers |
 | --- | --- |
