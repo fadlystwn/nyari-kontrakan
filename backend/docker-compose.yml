@@ -1,5 +1,4 @@
 services:
-
   postgres:
     image: postgres:16-alpine
     container_name: scraper_postgres
@@ -12,10 +11,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    # Port removed for security - access only through internal Docker network
     networks:
       - scraper_net
-    # Security: Resource limits to prevent DoS
     deploy:
       resources:
         limits:
@@ -24,9 +21,6 @@ services:
         reservations:
           cpus: '0.5'
           memory: 512M
-    # Security: Run as non-root user (postgres image does this by default)
-    # Security: Read-only root filesystem (commented out as it requires specific setup)
-    # read_only: true
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -51,7 +45,6 @@ services:
       - "8000:8000"
     networks:
       - scraper_net
-    # Security: Resource limits
     deploy:
       resources:
         limits:
@@ -80,7 +73,6 @@ services:
       DATABASE_SSL_MODE: ${DATABASE_SSL_MODE}
     networks:
       - scraper_net
-    # Security: Resource limits (scraper needs more resources for Playwright)
     deploy:
       resources:
         limits:
